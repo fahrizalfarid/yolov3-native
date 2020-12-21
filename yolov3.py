@@ -78,3 +78,5 @@ output = Dense(10,activation='softmax')(x)
 
 
 darknet = Model(inputs, output)
+
+print(darknet.summary())
