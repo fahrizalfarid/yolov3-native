@@ -80,3 +80,14 @@ output = Dense(10,activation='softmax')(x)
 darknet = Model(inputs, output)
 
 print(darknet.summary())
+
+
+early_stopping = EarlyStopping(
+        monitor='val_loss',patience=5,
+        min_delta = 0.001
+)
+reduce_learning_rate = ReduceLROnPlateau(
+        monitor='val_loss',patience=5
+)
+
+darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'])
