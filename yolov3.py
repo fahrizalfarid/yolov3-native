@@ -90,4 +90,4 @@ reduce_learning_rate = ReduceLROnPlateau(
         monitor='val_loss',patience=5
 )
 
-darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'])
+darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'], callbacks=[early_stopping, reduce_learning_rate])
