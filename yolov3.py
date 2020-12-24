@@ -79,10 +79,14 @@ def model_darknet():
 
     darknet = Model(inputs, output)
 
+    adam = Adam(lr=5e-4)
+    darknet.compile(optimizer=adam, loss='categorical_crossentropy',metrics=['acc'])
     print(darknet.summary())
-
+    return darknet
 
 def run():
+    darknet_model = model_darknet()
+    
     early_stopping = EarlyStopping(
             monitor='val_loss',patience=5,
             min_delta = 0.001
@@ -90,9 +94,6 @@ def run():
     reduce_learning_rate = ReduceLROnPlateau(
             monitor='val_loss',patience=5
     )
-
-    darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'])
-    print(model.summary())
 
     history = model.fit(train_it, epochs=epochs, 
         callbacks=[early_stopping, reduce_learning_rate], validation_data=validation_it,
