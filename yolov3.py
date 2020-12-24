@@ -35,59 +35,68 @@ def DarknetResidual(inputs, filters):
     x = Add()([x, shortcut])
     return x
 
+def model_darknet():
+    inputs = Input(shape=(200,200,3))
+    x = DarknetConv(inputs, 32, kernel_size=(3,3),strides=(1,1))
 
-inputs = Input(shape=(200,200,3))
-x = DarknetConv(inputs, 32, kernel_size=(3,3),strides=(1,1))
+    x = DarknetConv(x, 64, kernel_size=(3,3), strides=(2,2))
 
-x = DarknetConv(x, 64, kernel_size=(3,3), strides=(2,2))
+    for _ in range(1):
+        x = DarknetResidual(x, 64)
 
-for _ in range(1):
-    x = DarknetResidual(x, 64)
+    x = DarknetConv(x, 128, kernel_size=(3,3), strides=(2,2))
+
+    for _ in range(2):
+        x = DarknetResidual(x, 128)
+
+    x = DarknetConv(x, 256, kernel_size=(3,3), strides=(2,2))
+
+    for _ in range(8):
+        x = DarknetResidual(x, 256)
+
+    x = DarknetConv(x, 512, kernel_size=(3,3), strides=(2,2))
+
+    for _ in range(8):
+        x = DarknetResidual(x, 512)
+
+    x = DarknetConv(x, 1024, kernel_size=(3,3), strides=(2,2))
+
+    for _ in range(4):
+        x = DarknetResidual(x, 1024)
+
+
+    x = GlobalAveragePooling2D()(x)
+
+    x = Dense(1024, activation='relu')(x)
+    x = Dropout(0.5)(x)
+
+    x = Dense(512, activation='relu')(x)
+    x = Dropout(0.5)(x)
+
+
+    output = Dense(10,activation='softmax')(x)
+
+
+    darknet = Model(inputs, output)
+
+    print(darknet.summary())
+
+
+def run():
+    early_stopping = EarlyStopping(
+            monitor='val_loss',patience=5,
+            min_delta = 0.001
+    )
+    reduce_learning_rate = ReduceLROnPlateau(
+            monitor='val_loss',patience=5
+    )
+
+    darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'])
+    print(model.summary())
+
+    history = model.fit(train_it, epochs=epochs, 
+        callbacks=[early_stopping, reduce_learning_rate], validation_data=validation_it,
+        steps_per_epoch=len(train_it), validation_steps=len(validation_it), shuffle=True
+    )
     
-x = DarknetConv(x, 128, kernel_size=(3,3), strides=(2,2))
-
-for _ in range(2):
-    x = DarknetResidual(x, 128)
-    
-x = DarknetConv(x, 256, kernel_size=(3,3), strides=(2,2))
-
-for _ in range(8):
-    x = DarknetResidual(x, 256)
-    
-x = DarknetConv(x, 512, kernel_size=(3,3), strides=(2,2))
-
-for _ in range(8):
-    x = DarknetResidual(x, 512)
-    
-x = DarknetConv(x, 1024, kernel_size=(3,3), strides=(2,2))
-
-for _ in range(4):
-    x = DarknetResidual(x, 1024)
-    
-
-x = GlobalAveragePooling2D()(x)
-
-x = Dense(1024, activation='relu')(x)
-x = Dropout(0.5)(x)
-
-x = Dense(512, activation='relu')(x)
-x = Dropout(0.5)(x)
-
-
-output = Dense(10,activation='softmax')(x)
-
-
-darknet = Model(inputs, output)
-
-print(darknet.summary())
-
-
-early_stopping = EarlyStopping(
-        monitor='val_loss',patience=5,
-        min_delta = 0.001
-)
-reduce_learning_rate = ReduceLROnPlateau(
-        monitor='val_loss',patience=5
-)
-
-darknet.compile(optimizer='adam', loss='categorical_crossentropy',metrics=['acc'], callbacks=[early_stopping, reduce_learning_rate])
+ run()
