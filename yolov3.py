@@ -100,4 +100,4 @@ def run():
         steps_per_epoch=len(train_it), validation_steps=len(validation_it), shuffle=True
     )
     
- run()
+run()
